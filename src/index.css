@@ -205,4 +205,5 @@ button:active { opacity: 0.75; }
 
 /* Safe area padding for page headers - pushes content below notch/Dynamic Island */
 .page-header {
-  padding-top: max(14px, calc(env(safe-area-in
+  padding-top: max(14px, calc(env(safe-area-inset-top) + 14px));
+}
