@@ -108,7 +108,7 @@ function AddMatchModal({ onClose, onSave, existingMatch }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-fullscreen" onClick={e => e.stopPropagation()}>
-        <div style={{ padding: '14px 16px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, borderBottom: '1px solid var(--color-border)' }}>
+        <div className="page-header">
           <span style={{ fontWeight: 700, fontSize: 17 }}>{existingMatch ? 'Edit Match' : 'Log Match'}</span>
           <button onClick={onClose} style={{ background: 'none', padding: 4, color: 'var(--color-text-muted)', borderRadius: 6 }}>
             <IconX size={20} />
@@ -282,7 +282,7 @@ function MatchDetail({ match, players, onClose, onUpdate }) {
     <>
       <div className="modal-overlay">
         <div className="modal-fullscreen">
-          <div style={{ padding: '14px 16px 10px', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, borderBottom: '1px solid var(--color-border)' }}>
+          <div className="page-header" style={{ justifyContent: 'flex-start', gap: 10 }}>
             <button onClick={onClose} style={{ background: 'none', padding: 4, color: 'var(--color-text-muted)', borderRadius: 6 }}><IconX size={20} /></button>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: 16 }}>vs {match.opponent}</div>
@@ -395,7 +395,7 @@ export default function Matches() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '14px 16px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
+      <div className="page-header">
         <span style={{ fontWeight: 700, fontSize: 20 }}>Matches</span>
         <button onClick={() => setShowAdd(true)} style={{ background: 'none', color: 'var(--color-purple)', fontSize: 13, fontWeight: 600, padding: '5px 10px', border: '1px solid var(--color-purple)', borderRadius: 8 }}>
           + Log Match

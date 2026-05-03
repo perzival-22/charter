@@ -32,7 +32,7 @@ function RegisterModal({ onClose }) {
   return (
     <div className="modal-overlay">
       <div className="modal-fullscreen">
-        <div style={{ padding: '14px 16px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, borderBottom: '1px solid var(--color-border)' }}>
+        <div className="page-header">
           <span style={{ fontWeight: 700, fontSize: 17 }}>Take Register</span>
           <button onClick={onClose} style={{ background: 'none', padding: 4, color: 'var(--color-text-muted)', borderRadius: 6 }}>
             <IconX size={20} />
@@ -124,13 +124,7 @@ export default function Squad() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{
-        padding: '14px 16px 10px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexShrink: 0,
-        borderBottom: '1px solid var(--color-border)',
-        background: 'var(--color-surface)',
-      }}>
+      <div className="page-header">
         <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.3px' }}>Charter</span>
         <span style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>{settings.team_name}</span>
       </div>
@@ -206,3 +200,4 @@ export default function Squad() {
     </div>
   )
 }
+                                                                                                                                                                                                                                       

@@ -68,7 +68,7 @@ export default function PlayerProfile() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '14px 16px 0', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
+      <div className="page-header" style={{ justifyContent: 'flex-start', paddingBottom: 0, gap: 10 }}>
         <button onClick={() => navigate('/squad')} style={{ background: 'none', padding: 4, color: 'var(--color-text-muted)', borderRadius: 6 }}>
           <IconX size={20} />
         </button>
@@ -257,3 +257,4 @@ export default function PlayerProfile() {
     </div>
   )
 }
+                                                                                         

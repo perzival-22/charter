@@ -34,24 +34,24 @@ export default function Settings() {
   }
 
   function exportAttendance() {
-    const { getSessions, getPlayers } = require ? (() => {
-      const ls = require('../lib/localStorage')
-      return ls
-    })() : {}
     const sessions = JSON.parse(localStorage.getItem('charter_sessions') || '[]')
     const players = JSON.parse(localStorage.getItem('charter_players') || '[]')
     const settings = form
     let txt = `ATTENDANCE REPORT — ${settings.team_name || 'My Team'}\n`
     txt += `Generated: ${new Date().toLocaleDateString('en-US')}\n\n`
     const done = sessions.filter(s => s.status === 'done')
-    done.forEach(s => {
-      txt += `${s.date} — ${s.theme || 'Session'}\n`
-      s.attendance?.forEach(a => {
-        const p = players.find(pl => pl.id === a.player_id)
-        if (p) txt += `  ${p.first_name} ${p.last_name}: ${a.status}\n`
+    if (done.length === 0) {
+      txt += 'No completed sessions yet.\n'
+    } else {
+      done.forEach(s => {
+        txt += `${s.date} — ${s.theme || 'Session'}\n`
+        s.attendance?.forEach(a => {
+          const p = players.find(pl => pl.id === a.player_id)
+          if (p) txt += `  ${p.first_name} ${p.last_name}: ${a.status}\n`
+        })
+        txt += '\n'
       })
-      txt += '\n'
-    })
+    }
     const blob = new Blob([txt], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -79,7 +79,7 @@ export default function Settings() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '14px 16px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
+      <div className="page-header">
         <span style={{ fontWeight: 700, fontSize: 20 }}>Settings</span>
         <button
           onClick={handleSave}
