@@ -59,21 +59,6 @@ function DrillRow({ drill, added, onAdd, isCustom, onDelete, refreshCustom }) {
 
       {expanded && (
         <div style={{ padding: '0 14px 14px', borderTop: '1px solid var(--color-border)' }}>
-          {drill.description && (
-            <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: '10px 0 0', lineHeight: 1.5 }}>{drill.description}</p>
-          )}
-          {drill.coaching_points && (
-            <div style={{ marginTop: 8 }}>
-              <div className="section-label" style={{ marginBottom: 4 }}>Coaching Points</div>
-              <p style={{ fontSize: 13, color: 'var(--color-text)', margin: 0, lineHeight: 1.5 }}>{drill.coaching_points}</p>
-            </div>
-          )}
-          {drill.equipment && (
-            <div style={{ marginTop: 8 }}>
-              <div className="section-label" style={{ marginBottom: 4 }}>Equipment</div>
-              <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: 0 }}>{drill.equipment}</p>
-            </div>
-          )}
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             {added ? (
               <div style={{
@@ -122,6 +107,21 @@ function DrillRow({ drill, added, onAdd, isCustom, onDelete, refreshCustom }) {
               </button>
             )}
           </div>
+          {drill.description && (
+            <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: '10px 0 0', lineHeight: 1.5 }}>{drill.description}</p>
+          )}
+          {drill.coaching_points && (
+            <div style={{ marginTop: 8 }}>
+              <div className="section-label" style={{ marginBottom: 4 }}>Coaching Points</div>
+              <p style={{ fontSize: 13, color: 'var(--color-text)', margin: 0, lineHeight: 1.5 }}>{drill.coaching_points}</p>
+            </div>
+          )}
+          {drill.equipment && (
+            <div style={{ marginTop: 8 }}>
+              <div className="section-label" style={{ marginBottom: 4 }}>Equipment</div>
+              <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: 0 }}>{drill.equipment}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
