@@ -203,6 +203,6 @@ button:active { opacity: 0.75; }
 
 .divider { height: 1px; background: var(--color-border); }
 
-/* Safe area padding for page headers — pushes content below notch/Dynamic Island */
+/* Safe area padding for page headers - pushes content below notch/Dynamic Island */
 .page-header {
-  padding-top: max(14px, calc(env(safe-area-
+  padding-top: max(14px, calc(env(safe-area-in
