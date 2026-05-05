@@ -1,54 +1,22 @@
 import { NavLink } from 'react-router-dom'
-import { IconSquad, IconSessions, IconMatches, IconSettings } from './Icons'
+import Ic from './Ic'
 
 const tabs = [
-  { to: '/squad', label: 'Squad', Icon: IconSquad },
-  { to: '/sessions', label: 'Sessions', Icon: IconSessions },
-  { to: '/matches', label: 'Matches', Icon: IconMatches },
-  { to: '/settings', label: 'Settings', Icon: IconSettings },
+  { to: '/squad',    icon: 'squad',    label: 'Squad' },
+  { to: '/sessions', icon: 'sessions', label: 'Sessions' },
+  { to: '/matches',  icon: 'matches',  label: 'Matches' },
+  { to: '/settings', icon: 'settings', label: 'Setup' },
 ]
 
 export default function BottomNav() {
   return (
-    <nav style={{
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
-      height: 64,
-      background: 'var(--color-surface)',
-      borderTop: '1px solid var(--color-border)',
-      display: 'flex',
-      alignItems: 'stretch',
-      zIndex: 20,
-      paddingBottom: 'env(safe-area-inset-bottom)',
-    }}>
-      {tabs.map(({ to, label, Icon }) => (
-        <NavLink
-          key={to}
-          to={to}
-          style={({ isActive }) => ({
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 3,
-            textDecoration: 'none',
-            color: isActive ? 'var(--color-accent-light)' : 'var(--color-text-muted)',
-            fontSize: 10,
-            fontWeight: isActive ? 600 : 400,
-            WebkitTapHighlightColor: 'transparent',
-          })}
-        >
-          {({ isActive }) => (
-            <>
-              <Icon size={22} color={isActive ? 'var(--color-accent-light)' : 'var(--color-text-muted)'} />
-              {label}
-            </>
-          )}
+    <div className="bnav">
+      {tabs.map(t => (
+        <NavLink key={t.to} to={t.to} className={({ isActive }) => `ni${isActive ? ' active' : ''}`}>
+          <Ic n={t.icon} s={22} />
+          <span>{t.label}</span>
         </NavLink>
       ))}
-    </nav>
+    </div>
   )
 }

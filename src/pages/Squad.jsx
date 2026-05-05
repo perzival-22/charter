@@ -1,202 +1,214 @@
 import { useState, useEffect } from 'react'
-import { getPlayers, getActivePlayers, updatePlayer, getSessions, updateSession } from '../lib/localStorage'
-import { getSettings } from '../lib/localStorage'
-import PlayerCard from '../components/PlayerCard'
-import AddPlayerModal from '../components/AddPlayerModal'
-import { IconPlus, IconX, IconWarning } from '../components/Icons'
+import { getPlayers, getActivePlayers, getSessions, getSettings, createPlayer, updatePlayer, deletePlayer } from '../lib/localStorage'
+import { useNavigate } from 'react-router-dom'
+import Ic from '../components/Ic'
+import RegisterModal from '../components/RegisterModal'
 
-function RegisterModal({ onClose }) {
-  const players = getActivePlayers().sort((a, b) => parseInt(a.number || 0) - parseInt(b.number || 0))
-  const [status, setStatus] = useState(() => {
-    const s = {}
-    players.forEach(p => { s[p.id] = 'present' })
-    return s
-  })
-  const [saved, setSaved] = useState(false)
+const fullName = p => `${p.first_name} ${p.last_name}`
+const initials = p => `${p.first_name[0]}${p.last_name[0]}`
 
-  function toggle(id, st) {
-    setStatus(prev => ({ ...prev, [id]: st }))
-  }
+function AddPlayerModal({ onClose, onSave }) {
+  const [form, setForm] = useState({ first_name: '', last_name: '', number: '', position: 'MID', dob: '', parent_name: '', parent_phone: '', parent_email: '', medical_notes: '' })
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   function handleSave() {
-    const sessions = getSessions()
-    const planned = sessions.find(s => s.status === 'planned' && s.date >= new Date().toISOString().split('T')[0])
-    if (planned) {
-      const attendance = Object.entries(status).map(([player_id, st]) => ({ player_id, status: st }))
-      updateSession(planned.id, { attendance })
-    }
-    setSaved(true)
-    setTimeout(onClose, 600)
+    if (!form.first_name.trim() || !form.last_name.trim()) return
+    createPlayer(form)
+    onSave()
+    onClose()
   }
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-fullscreen">
-        <div className="page-header">
-          <span style={{ fontWeight: 700, fontSize: 17 }}>Take Register</span>
-          <button onClick={onClose} style={{ background: 'none', padding: 4, color: 'var(--color-text-muted)', borderRadius: 6 }}>
-            <IconX size={20} />
-          </button>
+    <div className="modal" onClick={onClose}>
+      <div className="sheet" onClick={e => e.stopPropagation()}>
+        <div className="handle" />
+        <div className="mh">
+          <div className="mh-title">Add Player</div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--txt2)' }}><Ic n="x" s={20} /></button>
         </div>
-        <div className="modal-scroll" style={{ padding: '8px 16px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {players.map(p => {
-            const st = status[p.id]
-            return (
-              <div key={p.id} style={{
-                background: 'var(--color-surface-2)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 10,
-                padding: '10px 12px',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <div style={{
-                    width: 30, height: 30, borderRadius: '50%',
-                    background: 'var(--color-accent)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0,
-                  }}>{p.number || '?'}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {p.first_name} {p.last_name}
-                      {p.medical_notes && <IconWarning size={13} color="var(--color-danger)" />}
-                    </div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {['present', 'late', 'absent'].map(s => {
-                    const colors = { present: 'var(--color-accent)', late: 'var(--color-warning)', absent: 'var(--color-danger)' }
-                    const labels = { present: 'Present', late: 'Late', absent: 'Absent' }
-                    const isActive = st === s
-                    return (
-                      <button
-                        key={s}
-                        onClick={() => toggle(p.id, s)}
-                        style={{
-                          flex: 1,
-                          padding: '8px 4px',
-                          background: isActive ? colors[s] : 'var(--color-surface)',
-                          color: isActive ? '#fff' : 'var(--color-text-muted)',
-                          border: `1px solid ${isActive ? colors[s] : 'var(--color-border)'}`,
-                          borderRadius: 7,
-                          fontSize: 13,
-                          fontWeight: isActive ? 700 : 400,
-                        }}
-                      >{labels[s]}</button>
-                    )
-                  })}
-                </div>
+        <div className="mscroll" style={{ paddingTop: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+            <div><label className="lbl">First Name *</label><input className="inp" value={form.first_name} onChange={e => set('first_name', e.target.value)} placeholder="Marcus" /></div>
+            <div><label className="lbl">Last Name *</label><input className="inp" value={form.last_name} onChange={e => set('last_name', e.target.value)} placeholder="Rivera" /></div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 10, marginBottom: 12 }}>
+            <div><label className="lbl"># Kit</label><input className="inp" value={form.number} onChange={e => set('number', e.target.value)} placeholder="9" /></div>
+            <div>
+              <label className="lbl">Position</label>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['GK', 'DEF', 'MID', 'FWD'].map(pos => (
+                  <button key={pos} onClick={() => set('position', pos)} style={{ flex: 1, padding: '8px 4px', background: form.position === pos ? 'var(--lime)' : 'var(--bg3)', color: form.position === pos ? '#0e0e10' : 'var(--txt2)', border: `1px solid ${form.position === pos ? 'var(--lime)' : 'var(--border)'}`, borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    {pos}
+                  </button>
+                ))}
               </div>
-            )
-          })}
-        </div>
-        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--color-border)', flexShrink: 0 }}>
-          <button
-            onClick={handleSave}
-            style={{
-              width: '100%', padding: '13px',
-              background: saved ? 'var(--color-surface-2)' : 'var(--color-accent)',
-              color: saved ? 'var(--color-accent-light)' : '#fff',
-              fontWeight: 700, fontSize: 16,
-            }}
-          >
-            {saved ? 'Saved!' : 'Save Register'}
-          </button>
+            </div>
+          </div>
+          <div style={{ marginBottom: 12 }}><label className="lbl">Date of Birth</label><input className="inp" type="date" value={form.dob} onChange={e => set('dob', e.target.value)} /></div>
+          <div style={{ marginBottom: 12 }}><label className="lbl">Parent / Guardian</label><input className="inp" value={form.parent_name} onChange={e => set('parent_name', e.target.value)} placeholder="Full name" /></div>
+          <div style={{ marginBottom: 12 }}><label className="lbl">Parent Phone</label><input className="inp" value={form.parent_phone} onChange={e => set('parent_phone', e.target.value)} placeholder="555-0100" /></div>
+          <div style={{ marginBottom: 16 }}><label className="lbl">Medical Notes</label><textarea className="inp" value={form.medical_notes} onChange={e => set('medical_notes', e.target.value)} placeholder="Allergies, conditions, etc." /></div>
+          <button className="btn-primary" onClick={handleSave}>Add to Squad</button>
         </div>
       </div>
     </div>
   )
 }
 
+const POS_GROUPS = [
+  { key: 'GK',  label: 'Goalkeepers' },
+  { key: 'DEF', label: 'Defenders' },
+  { key: 'MID', label: 'Midfielders' },
+  { key: 'FWD', label: 'Forwards' },
+]
+
 export default function Squad() {
-  const [players, setPlayers] = useState([])
+  const [tab, setTab] = useState('roster')
+  const [search, setSearch] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [showRegister, setShowRegister] = useState(false)
-  const [filter, setFilter] = useState('active')
-  const settings = getSettings()
+  const [players, setPlayers] = useState([])
+  const navigate = useNavigate()
 
-  function refresh() {
-    const all = getPlayers()
-    const shown = filter === 'active' ? all.filter(p => p.status === 'active') : all
-    setPlayers(shown.sort((a, b) => parseInt(a.number || 99) - parseInt(b.number || 99)))
+  const refresh = () => {
+    const all = getPlayers().filter(p => p.status === 'active')
+    setPlayers(all.sort((a, b) => parseInt(a.number || 99) - parseInt(b.number || 99)))
   }
 
-  useEffect(() => { refresh() }, [filter])
+  useEffect(() => { refresh() }, [])
+
+  const settings = getSettings()
+  const filtered = players.filter(p =>
+    `${p.first_name} ${p.last_name} ${p.position}`.toLowerCase().includes(search.toLowerCase())
+  )
+
+  const attDots = p => {
+    const sessions = getSessions().filter(s => s.status === 'done' && s.attendance?.length > 0)
+    return sessions.slice(-5).map(s => s.attendance.find(a => a.player_id === p.id)?.status || 'absent')
+  }
+
+  const attRate = p => {
+    const sessions = getSessions().filter(s => s.status === 'done' && s.attendance?.some(a => a.player_id === p.id))
+    if (!sessions.length) return null
+    const present = sessions.filter(s => s.attendance.find(a => a.player_id === p.id)?.status === 'present').length
+    return Math.round(present / sessions.length * 100)
+  }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div className="page-header">
-        <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.3px' }}>Charter</span>
-        <span style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>{settings.team_name}</span>
+    <div className="screen-fixed">
+      <div className="ph" style={{ paddingBottom: 8 }}>
+        <div className="pt">Squad</div>
+        <div className="ps">{settings.team_name || 'My Team'} &middot; {players.length} players</div>
       </div>
 
-      <div style={{ padding: '12px 16px 8px', flexShrink: 0, display: 'flex', gap: 8 }}>
-        <button
-          onClick={() => setShowRegister(true)}
-          style={{
-            flex: 1, padding: '10px',
-            background: 'var(--color-accent)',
-            color: '#fff', fontWeight: 600, fontSize: 14,
-          }}
-        >
+      {/* Action row */}
+      <div style={{ padding: '0 20px 12px', display: 'flex', gap: 8 }}>
+        <button onClick={() => setShowRegister(true)} style={{ flex: 1, padding: '10px', background: 'var(--lime)', color: '#0e0e10', fontWeight: 700, fontSize: 14, border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
           Take Register
         </button>
-        <button
-          onClick={() => setShowAdd(true)}
-          style={{
-            padding: '10px 16px',
-            background: 'transparent',
-            color: 'var(--color-text)',
-            border: '1px solid var(--color-border)',
-            fontSize: 14,
-          }}
-        >
-          + Add Player
+        <button onClick={() => setShowAdd(true)} style={{ padding: '10px 16px', background: 'var(--bg2)', color: 'var(--txt)', border: '1px solid var(--border)', borderRadius: 10, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500 }}>
+          + Add
         </button>
       </div>
 
-      <div style={{ padding: '0 16px 10px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', gap: 6, background: 'var(--color-surface-2)', borderRadius: 8, padding: 3 }}>
-          {['active', 'all'].map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              style={{
-                flex: 1, padding: '6px',
-                background: filter === f ? 'var(--color-surface)' : 'transparent',
-                color: filter === f ? 'var(--color-text)' : 'var(--color-text-muted)',
-                fontWeight: filter === f ? 600 : 400,
-                fontSize: 13,
-                border: filter === f ? '1px solid var(--color-border)' : '1px solid transparent',
-                borderRadius: 6,
-              }}
-            >
-              {f === 'active' ? `Active (${getPlayers().filter(p => p.status === 'active').length})` : `All (${getPlayers().length})`}
-            </button>
-          ))}
-        </div>
+      <div className="tabs">
+        <button className={`tb ${tab === 'roster' ? 'active' : ''}`} onClick={() => setTab('roster')}>Roster</button>
+        <button className={`tb ${tab === 'attendance' ? 'active' : ''}`} onClick={() => setTab('attendance')}>Attendance</button>
       </div>
 
-      <div className="page-content" style={{ paddingTop: 0 }}>
-        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {players.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--color-text-muted)' }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>⚽</div>
-              <div style={{ fontWeight: 600, marginBottom: 6, color: 'var(--color-text)' }}>No players yet</div>
-              <div style={{ fontSize: 14 }}>Tap "+ Add Player" to register your squad.</div>
+      {tab === 'roster' && (
+        <>
+          <div className="sbar">
+            <Ic n="search" s={15} c="var(--txt3)" />
+            <input className="sinp" placeholder="Search players..." value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <div className="page-content" style={{ paddingBottom: 0 }}>
+            {POS_GROUPS.map(({ key, label }) => {
+              const group = filtered.filter(p => p.position === key)
+              if (!group.length) return null
+              return (
+                <div key={key} style={{ marginBottom: 16 }}>
+                  <div className="sh">
+                    <span className="sl">{label}</span>
+                    <span style={{ fontSize: 11, color: 'var(--txt3)', fontFamily: "'IBM Plex Mono',monospace" }}>{group.length}</span>
+                  </div>
+                  <div style={{ margin: '0 20px' }} className="card">
+                    {group.map(p => {
+                      const dots = attDots(p)
+                      const rate = attRate(p)
+                      return (
+                        <div key={p.id} className="row" onClick={() => navigate(`/player/${p.id}`)}>
+                          <div className="av">{initials(p)}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 14, fontWeight: 500, display: 'flex', gap: 6, alignItems: 'center' }}>
+                              {fullName(p)}
+                              {p.medical_notes && <Ic n="warn" s={12} c="var(--red)" />}
+                            </div>
+                            <div style={{ fontSize: 12, color: 'var(--txt3)', marginTop: 2 }}>#{p.number || '-'}</div>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                            {dots.length > 0 && (
+                              <div className="att-dots">
+                                {dots.map((d, i) => <div key={i} className={`ad ${d === 'present' ? 'p' : d === 'late' ? 'l' : 'a'}`} />)}
+                              </div>
+                            )}
+                            {rate !== null && <span style={{ fontSize: 11, color: 'var(--txt3)', fontFamily: "'IBM Plex Mono',monospace" }}>{rate}%</span>}
+                          </div>
+                          <Ic n="chevron" s={16} c="var(--txt3)" />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+            {filtered.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--txt2)' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--txt)' }}>No players found</div>
+                <div style={{ fontSize: 12, marginTop: 4 }}>Add your first player using the button above</div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {tab === 'attendance' && (
+        <div className="page-content" style={{ paddingBottom: 0 }}>
+          <div style={{ padding: '0 20px 16px' }}>
+            <div style={{ background: 'var(--lime-d2)', border: '1px solid rgba(200,241,53,.12)', borderRadius: 12, padding: '14px 16px', marginBottom: 14 }}>
+              <div style={{ fontSize: 11, color: 'var(--lime)', fontFamily: "'IBM Plex Mono',monospace", textTransform: 'uppercase', letterSpacing: .5, marginBottom: 4 }}>Quick view</div>
+              <div style={{ fontSize: 13, color: 'var(--txt2)' }}>Last 5 sessions. Green = present, amber = late, empty = absent.</div>
             </div>
-          )}
-          {players.map(p => (
-            <PlayerCard key={p.id} player={p} onUpdate={refresh} />
-          ))}
+            <div className="card">
+              {players.map(p => {
+                const dots = attDots(p)
+                const rate = attRate(p)
+                return (
+                  <div key={p.id} className="row" onClick={() => navigate(`/player/${p.id}`)}>
+                    <div className="av">{initials(p)}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 500 }}>{fullName(p)}</div>
+                      <span className={`badge badge-${(p.position || 'mid').toLowerCase()}`}>{p.position || 'MID'}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                      {dots.length > 0 && (
+                        <div className="att-dots">
+                          {dots.map((d, i) => <div key={i} className={`ad ${d === 'present' ? 'p' : d === 'late' ? 'l' : 'a'}`} />)}
+                        </div>
+                      )}
+                      {rate !== null && <span style={{ fontSize: 11, color: 'var(--txt3)', fontFamily: "'IBM Plex Mono',monospace" }}>{rate}%</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      <button className="fab" onClick={() => setShowAdd(true)}>
-        <IconPlus size={24} color="#fff" />
-      </button>
-
-      {showAdd && <AddPlayerModal onClose={() => { setShowAdd(false); refresh() }} onSave={refresh} />}
-      {showRegister && <RegisterModal onClose={() => setShowRegister(false)} />}
+      <button className="fab" onClick={() => setShowAdd(true)}><Ic n="plus" s={22} c="#0e0e10" /></button>
+      {showAdd && <AddPlayerModal onClose={() => setShowAdd(false)} onSave={refresh} />}
+      {showRegister && <RegisterModal onClose={() => { setShowRegister(false); refresh() }} />}
     </div>
   )
 }
